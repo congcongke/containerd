@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -77,6 +78,7 @@ func (cs *contentStore) Info(ctx context.Context, dgst digest.Digest) (content.I
 	if err := view(ctx, cs.db, func(tx *bolt.Tx) error {
 		bkt := getBlobBucket(tx, ns, dgst)
 		if bkt == nil {
+			debug.PrintStack()
 			return fmt.Errorf("content digest %v: %w", dgst, errdefs.ErrNotFound)
 		}
 
@@ -104,6 +106,7 @@ func (cs *contentStore) Update(ctx context.Context, info content.Info, fieldpath
 	if err := update(ctx, cs.db, func(tx *bolt.Tx) error {
 		bkt := getBlobBucket(tx, ns, info.Digest)
 		if bkt == nil {
+			debug.PrintStack()
 			return fmt.Errorf("content digest %v: %w", info.Digest, errdefs.ErrNotFound)
 		}
 
@@ -211,6 +214,7 @@ func (cs *contentStore) Delete(ctx context.Context, dgst digest.Digest) error {
 	return update(ctx, cs.db, func(tx *bolt.Tx) error {
 		bkt := getBlobBucket(tx, ns, dgst)
 		if bkt == nil {
+			debug.PrintStack()
 			return fmt.Errorf("content digest %v: %w", dgst, errdefs.ErrNotFound)
 		}
 
@@ -700,6 +704,7 @@ func (cs *contentStore) checkAccess(ctx context.Context, dgst digest.Digest) err
 	return view(ctx, cs.db, func(tx *bolt.Tx) error {
 		bkt := getBlobBucket(tx, ns, dgst)
 		if bkt == nil {
+			debug.PrintStack()
 			return fmt.Errorf("content digest %v: %w", dgst, errdefs.ErrNotFound)
 		}
 		return nil
